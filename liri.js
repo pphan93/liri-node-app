@@ -4,6 +4,7 @@ var keys = require("./keys.js");
 var Spotify = require("node-spotify-api");
 var axios = require("axios");
 var moment = require("moment");
+var fs = require("fs");
 
 //Keys//
 var spotify = new Spotify(keys.spotify);
@@ -12,8 +13,8 @@ var bandAPI = keys.bands.apiID;
 console.log(keys.spotify);
 
 //Application Global Vars
-
-
+var filename;
+var dataToWrite = "";
 
 //Get User Input
 var command = process.argv[2];
@@ -21,40 +22,141 @@ var userInput = process.argv.splice(3).join("+");
 
 console.log(command);
 
-switch (command) {
-    case "concert-this":
-        concertThis(userInput);
-        break;
-    case "spotify-this-song":
-        spotifyThisSong(userInput);
-        break;
-    case "movie-this":
-        movieThis(userInput);
-        break;
-    case "do-what-it-says":
-        doWhatItSays(userInput);
-        break;
-    default:
-        console.log("No Match Command. Please try again!");
+function switchCases(command) {
+    switch (command) {
+        case "concert-this":
+            concertThis(userInput);
+            break;
+        case "spotify-this-song":
+            spotifyThisSong(userInput);
+            break;
+        case "movie-this":
+            movieThis(userInput);
+            break;
+        case "do-what-it-says":
+            doWhatItSays();
+            break;
+        default:
+            console.log("No Match Command. Please try again!");
+    }
 }
+
+switchCases(command);
 
 
 function concertThis(artist) {
+    if (artist === "" || artist === null || artist === undefined) {
+        console.log("Please enter name of artist/band");
+        return;
+    }
     bandsInTown(artist);
 }
 
 function spotifyThisSong(songName) {
-    spotifyGet().then(function (data) {
-        console.log(data.tracks.items)
+    if (songName === "" || songName === null || songName === undefined) {
+        songName = "The Sign";
+    }
+
+    spotifyGet(songName).then(function (data) {
+        items = data.tracks.items;
+        for (var i in items) {
+            var artistsObj = items[i].artists;
+            var artists = spotifyParseArtistsName(artistsObj);
+            var spotifySongName = items[i].name;
+            var prevLink = items[i].external_urls.spotify;
+            var albumName = items[i].album.name;
+
+            dataToWrite = "_______________________" + "\n" +
+                artists + "\n" +
+                "Song Name: " + spotifySongName + "\n" +
+                "Preview Link: " + prevLink + "\n" +
+                "Album Name: " + albumName + "\n";
+
+            console.log(dataToWrite);
+            appendToFile(dataToWrite);
+        }
 
     });
 }
 
-function movieThis() {
+function spotifyParseArtistsName(artistsObj) {
+    var artistsName = [];
+    for (var i in artistsObj) {
+        artistsName.push(artistsObj[i].name);
+    }
+    return ("Artist(s) Name: " + artistsName.join(", "));
+}
 
+
+function movieThis(movieName) {
+    if (movieName === "" || movieName === null || movieName === undefined) {
+        movieName = "Mr. Nobody";
+    }
+    omdbAPI(movieName);
+}
+
+
+function omdbAPI(movieName) {
+    var movieURL = "http://www.omdbapi.com/?t=" + movieName + "&apikey=trilogy";
+    axiosGet(movieURL).then(function (data) {
+
+        dataToWrite = "___________________________" + "\n" + "Title: " + data.Title + "\n" + "Year: " + data.Year + "\n" +
+            "IMDB Rating: " + data.imdbRating + "\n" +
+            omdbAPIParseRotten(data.Ratings) + "\n" +
+            "Country : " + data.Country + "\n" +
+            "Language: " + data.Language + "\n" +
+            "Plot: " + data.Plot + "\n" +
+            "Actors: " + data.Actors + "\n";
+
+        console.log(dataToWrite);
+        appendToFile(dataToWrite);
+    });
+}
+
+function omdbAPIParseRotten(rating) {
+    for (var i in rating) {
+        if (rating[i].Source === "Rotten Tomatoes") {
+            return ("Rotten Tomatoes Rating: " + rating[i].Value);
+        }
+    }
 }
 
 function doWhatItSays() {
+    filename = "random.txt";
+    readFile(function (err, data) {
+        var dataArr = data.split(",");
+        var command = dataArr[0];
+        userInput = dataArr[1];
+        switchCases(command);
+    });
+}
+
+function readFile(callback) {
+    fs.readFile(filename, "utf8", function (error, data) {
+
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }
+        callback(null, data);
+    });
+}
+
+function appendToFile(dataToWrite) {
+    var writeFileName = "log.txt";
+    fs.appendFile(writeFileName, dataToWrite, function (err) {
+
+        // If an error was experienced we will log it.
+        if (err) {
+            console.log(err);
+        }
+
+        // If no error is experienced, we'll log the phrase "Content Added" to our node console.
+        else {
+            //console.log("Content Added!");
+        }
+
+    });
 
 }
 
@@ -73,22 +175,26 @@ function bandsInTown(artist) {
             } else {
                 location = venue.city + "," + venue.region + "," + venue.country;
             }
-            console.log("__________________________");
-            console.log(venueName);
-            console.log(location);
-            console.log(dateTime);
+
+            dataToWrite = "__________________________" + "\n" +
+                "Venue Name: " + venueName + "\n" +
+                "Venue Location: " + location + "\n" +
+                "Date of the Event: " + dateTime + "\n";
+
+            console.log(dataToWrite);
+            appendToFile(dataToWrite);
         }
     });
-    //console.log(data);
 }
 
-//bandsInTown("slayer");
 
-function spotifyGet() {
+function spotifyGet(songName) {
     return spotify
         .search({
             type: 'track',
-            query: 'All the Small Things'
+            query: songName,
+            limit: 10,
+            offset: 5
         })
         .then(function (response) {
             return response;
