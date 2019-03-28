@@ -10,17 +10,23 @@ var fs = require("fs");
 var spotify = new Spotify(keys.spotify);
 var bandAPI = keys.bands.apiID;
 
-console.log(keys.spotify);
+//console.log(keys.spotify);
 
 //Application Global Vars
 var filename;
 var dataToWrite = "";
+var txtRed = '\033[0;31m'
+var txtBlue = '\033[0;34m'
+var txtYellow = '\033[1;33m'
+var txtCyan = '\033[0;36m'
+var txtReset = '\033[0m'
+var line = "_____________________________________________________"
 
 //Get User Input
 var command = process.argv[2];
 var userInput = process.argv.splice(3).join("+");
 
-console.log(command);
+//console.log(command);
 
 function switchCases(command) {
     switch (command) {
@@ -37,7 +43,7 @@ function switchCases(command) {
             doWhatItSays();
             break;
         default:
-            console.log("No Match Command. Please try again!");
+            console.log(txtRed + "No Match Command. Please try again!" + txtReset);
     }
 }
 
@@ -46,7 +52,7 @@ switchCases(command);
 
 function concertThis(artist) {
     if (artist === "" || artist === null || artist === undefined) {
-        console.log("Please enter name of artist/band");
+        console.log(txtRed + "Please enter name of artist/band" + txtReset);
         return;
     }
     bandsInTown(artist);
@@ -59,24 +65,30 @@ function spotifyThisSong(songName) {
 
     spotifyGet(songName).then(function (data) {
         items = data.tracks.items;
-        for (var i in items) {
-            var artistsObj = items[i].artists;
-            var artists = spotifyParseArtistsName(artistsObj);
-            var spotifySongName = items[i].name;
-            var prevLink = items[i].external_urls.spotify;
-            var albumName = items[i].album.name;
+        //console.log(data)
 
-            dataToWrite = "_______________________" + "\n" +
-                artists + "\n" +
-                "Song Name: " + spotifySongName + "\n" +
-                "Preview Link: " + prevLink + "\n" +
-                "Album Name: " + albumName + "\n";
+        if (items === "" || items === undefined || items.length == 0) {
+            console.log(txtRed + "Song not available on spotify" + txtReset)
+        } else {
+            for (var i in items) {
+                var artistsObj = items[i].artists;
+                var artists = spotifyParseArtistsName(artistsObj);
+                var spotifySongName = items[i].name;
+                var prevLink = items[i].external_urls.spotify;
+                var albumName = items[i].album.name;
 
-            console.log(dataToWrite);
-            appendToFile(dataToWrite);
+                dataToWrite = txtYellow + line + "\n" +
+                    txtCyan + artists + "\n" +
+                    "Song Name: " + spotifySongName + "\n" +
+                    "Preview Link: " + prevLink + "\n" +
+                    "Album Name: " + albumName + txtReset + "\n";
+
+                console.log(dataToWrite);
+                appendToFile(dataToWrite);
+            }
         }
-
     });
+
 }
 
 function spotifyParseArtistsName(artistsObj) {
@@ -99,17 +111,25 @@ function movieThis(movieName) {
 function omdbAPI(movieName) {
     var movieURL = "http://www.omdbapi.com/?t=" + movieName + "&apikey=trilogy";
     axiosGet(movieURL).then(function (data) {
+        //console.log(data);
+        if (data.Response === "False") {
+            console.log(data.Error)
+        } else {
 
-        dataToWrite = "___________________________" + "\n" + "Title: " + data.Title + "\n" + "Year: " + data.Year + "\n" +
-            "IMDB Rating: " + data.imdbRating + "\n" +
-            omdbAPIParseRotten(data.Ratings) + "\n" +
-            "Country : " + data.Country + "\n" +
-            "Language: " + data.Language + "\n" +
-            "Plot: " + data.Plot + "\n" +
-            "Actors: " + data.Actors + "\n";
 
-        console.log(dataToWrite);
-        appendToFile(dataToWrite);
+            dataToWrite = txtYellow + line + "\n" +
+                txtCyan + "Title: " + data.Title + "\n" +
+                "Year: " + data.Year + "\n" +
+                "IMDB Rating: " + data.imdbRating + "\n" +
+                omdbAPIParseRotten(data.Ratings) + "\n" +
+                "Country : " + data.Country + "\n" +
+                "Language: " + data.Language + "\n" +
+                "Plot: " + data.Plot + "\n" +
+                "Actors: " + data.Actors + txtReset + "\n";
+
+            console.log(dataToWrite);
+            appendToFile(dataToWrite);
+        }
     });
 }
 
@@ -127,7 +147,9 @@ function doWhatItSays() {
         var dataArr = data.split(",");
         var command = dataArr[0];
         userInput = dataArr[1];
+        console.log(userInput);
         switchCases(command);
+        
     });
 }
 
@@ -162,27 +184,33 @@ function appendToFile(dataToWrite) {
 
 function bandsInTown(artist) {
     var url = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=" + bandAPI;
+    //console.log(url);
     axiosGet(url).then(function (data) {
         //console.log(data);
-        for (var i of data) {
-            var venue = i.venue;
-            var location;
-            var venueName = venue.name;
-            var dateTime = moment(i.datetime).format("MM/DD/YYYY");
-            //var dateTime = i.datetime;
-            if (venue.region === "") {
-                location = venue.city + "," + venue.country;
-            } else {
-                location = venue.city + "," + venue.region + "," + venue.country;
+        //return;
+        if (data === "" || data === undefined || data.length == 0 || data == "{warn=Not found}") {
+            console.log(txtRed + "No concerts available for this artist/band" + txtReset)
+        } else {
+            for (var i of data) {
+                var venue = i.venue;
+                var location;
+                var venueName = venue.name;
+                var dateTime = moment(i.datetime).format("MM/DD/YYYY");
+                //var dateTime = i.datetime;
+                if (venue.region === "") {
+                    location = venue.city + "," + venue.country;
+                } else {
+                    location = venue.city + "," + venue.region + "," + venue.country;
+                }
+
+                dataToWrite = txtYellow + line + "\n" +
+                    txtBlue + "Venue Name: " + venueName + "\n" +
+                    "Venue Location: " + location + "\n" +
+                    "Date of the Event: " + dateTime + txtReset + "\n";
+
+                console.log(dataToWrite);
+                appendToFile(dataToWrite);
             }
-
-            dataToWrite = "__________________________" + "\n" +
-                "Venue Name: " + venueName + "\n" +
-                "Venue Location: " + location + "\n" +
-                "Date of the Event: " + dateTime + "\n";
-
-            console.log(dataToWrite);
-            appendToFile(dataToWrite);
         }
     });
 }
@@ -218,9 +246,10 @@ function axiosGet(url) {
             if (error.response) {
                 // The request was made and the server responded with a status code
                 // that falls out of the range of 2xx
-                console.log(error.response.data);
-                console.log(error.response.status);
-                console.log(error.response.headers);
+                //console.log(error.response.data);
+                //console.log(error.response.data.errorMessage);
+                //console.log(error.response.status);
+                //console.log(error.response.headers);
             } else if (error.request) {
                 // The request was made but no response was received
                 // `error.request` is an object that comes back with details pertaining to the error that occurred.
@@ -229,7 +258,7 @@ function axiosGet(url) {
                 // Something happened in setting up the request that triggered an Error
                 console.log("Error", error.message);
             }
-            console.log(error.config);
+            //console.log(error.config);
         }
     );
 }
