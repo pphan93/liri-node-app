@@ -145,10 +145,10 @@ function doWhatItSays() {
     filename = "random.txt";
     readFile(function (err, data) {
         var dataArr = data.split(",");
-        var command = dataArr[0];
+        var command1 = dataArr[0];
         userInput = dataArr[1];
         console.log(userInput);
-        switchCases(command);
+        switchCases(command1);
         
     });
 }
