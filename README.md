@@ -25,8 +25,8 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
      * The album that the song is from
 
    * If no song is provided then your program will default to "The Sign" by Ace of Base.
-
-![](./gifs/spotify-this-song.gif)
+   
+      ![](./gifs/spotify-this-song.gif)
 
 3. `node liri.js movie-this '<movie name here>'`
 
@@ -60,8 +60,6 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
      * It should run `spotify-this-song` for "I Want it That Way," as follows the text in `random.txt`.
 
      * Edit the text in random.txt to test out the feature for movie-this and concert-this.
-     
-     
      ![](./gifs/do-what-it-says.gif) 
       
      
@@ -73,5 +71,6 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
 * Make sure you append each command you run to the `log.txt` file. 
 
 * Do not overwrite your file each time you run a command.
+
 ![](./gifs/append to log file.gif) 
 
