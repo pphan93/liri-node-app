@@ -69,6 +69,6 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
 
 * Make sure you append each command you run to the `log.txt` file. 
 
-* Do not overwrite your file each time you run a command. 
+* Do not overwrite your file each time you run a command.
 ![](./gifs/append to log file.gif) 
 
