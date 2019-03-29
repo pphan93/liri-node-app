@@ -145,8 +145,8 @@ function doWhatItSays() {
     filename = "random.txt";
     readFile(function (err, data) {
         var dataArr = data.split(",");
-        var command1 = dataArr[0];
-        userInput = dataArr[1];
+        var command1 = dataArr[0].replace(/["']/g,"");
+        userInput = dataArr[1].replace(/["']/g,"").split(" ").join("+");
         console.log(userInput);
         switchCases(command1);
         
