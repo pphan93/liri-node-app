@@ -51,7 +51,7 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
 
    * You'll use the `axios` package to retrieve data from the OMDB API.
    
-   ![](./gifs/Liri Move-This.gif)
+    ![](./gifs/move-this.gif)
 
 4. `node liri.js do-what-it-says`
 
@@ -72,5 +72,5 @@ LIRI is like iPhone's SIRI. However, while SIRI is a Speech Interpretation and R
 
 * Do not overwrite your file each time you run a command.
 
-![](./gifs/append to log file.gif) 
+  ![](./gifs/logFile.gif) 
 
